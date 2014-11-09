@@ -16,9 +16,9 @@ function searchUrlFor(name) {
          '%20site:wikipedia.org&btnI=3564';
 }
 
-var name = getName();
+$("#attend").hide();
 
-$("#data").attr('placeholder', 'send message as ' + name);
+var name = getName();
 
 var socket = io.connect('/');
 
@@ -26,18 +26,22 @@ socket.on('connect', function() {
   socket.emit('adduser', name);
 });
 
-// listener, whenever the server emits 'updatechat', this updates the chat body
 socket.on('updatechat', function (username, data) {
-  $('#conversation').append('<b>'+ escaped(username) + ':</b> ' + escaped(data) + "<br/>");
+  if(username == name){
+    $("#player1").text(parseInt($("#player1").text()) + 1);
+  }
+  else{
+    $("#player2").text(parseInt($("#player2").text()) + 1);
+  }
 });
 
-// listener, whenever the server emits 'updateusers', this updates the username list
 socket.on('updateusers', function(data) {
   $('#users').empty();
   $.each(data, function(key, value) {
     $('#users').append('<div><a href="' + searchUrlFor(key) + '" target="_blank">' +
                        key + '</div>');
   });
+  $("#player2").text(0);
 });
 
 socket.on('servernotification', function (data) {
@@ -47,21 +51,20 @@ socket.on('servernotification', function (data) {
 
     $('#conversation').append('connected: <a href="' + searchUrl + '" target="_blank">' +
                               escaped(data.username) + "</a><br/>");
+    $("#player1").text(0);
   } else {
     $('#conversation').append('disconnected: <a href="' + searchUrl + '" target="_blank">' +
                               escaped(data.username) + "</a><br/>");
+    $("#attend-content").text(data.username + " attended!");
+    $("#attend").show();
+    $("#player2").text(0);
   }
 });
 
-// on load of page
 $(function(){
-  // when the client hits ENTER on their keyboard
-  $('#data').keypress(function(e) {
-    if(e.which == 13) {
-      var message = $('#data').val();
-      $('#data').val('');
-      // tell server to execute 'sendchat' and send along one parameter
-      socket.emit('sendchat', message);
-    }
+  $('.gun').click(function(e) {
+
+    socket.emit('sendchat', 1);
+
   });
 });

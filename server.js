@@ -4,7 +4,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var nodes = { };
-var usernames = {};
+var userlist = {};
 server.listen(process.env.PORT || 3000);
 
 app.set('view engine', 'ejs');
@@ -18,6 +18,11 @@ app.get('/', function (req, res) {
   res.render('index');
 });
 
+userlist = {
+  curUser: 0;
+  users: []
+};
+
 io.sockets.on('connection', function(socket) {
   socket.on('sendchat', function (data) {
     io.sockets.emit('updatechat', socket.username, data);
@@ -26,7 +31,7 @@ io.sockets.on('connection', function(socket) {
   socket.on('adduser', function(username) {
     socket.username = username;
 
-    usernames[username] = username;
+    userlist[username] = username;
 
     socket.emit('servernotification',
                 { connected: true, to_self: true, username: username });
@@ -34,15 +39,14 @@ io.sockets.on('connection', function(socket) {
     socket.broadcast.emit('servernotification',
                           { connected: true, username: username });
 
-    io.sockets.emit('updateusers', usernames);
+    io.sockets.emit('updateusers', userlist);
   });
 
-  // when the user disconnects.. perform this
   socket.on('disconnect', function(){
 
-    delete usernames[socket.username];
+    delete userlist[socket.username];
 
-    io.sockets.emit('updateusers', usernames);
+    io.sockets.emit('updateusers', userlist);
 
     socket.broadcast.emit('servernotification',
                           { username: socket.username });
