@@ -45,9 +45,18 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('disconnect', function(){
 
-    delete userlist[socket.username];
+    var i = userlist.users.indexOf(socket.username);
+    if(i === userlist.users.length - 1){
+      userlist.users.pop();
+    }
+    else{
+      userlist.users.splice(i, 2, userlist.users[i + 1]);
+      if(userlist.curUser > i){
+        userlist.curUser--;
+      }
+    }
 
-    io.sockets.emit('updateusers', userlist);
+    io.sockets.emit('updateusers', userlist.users);
 
     socket.broadcast.emit('servernotification',
                           { username: socket.username });
