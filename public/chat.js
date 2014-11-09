@@ -16,8 +16,6 @@ function searchUrlFor(name) {
          '%20site:wikipedia.org&btnI=3564';
 }
 
-$("#attend").hide();
-
 var name = getName();
 
 var socket = io.connect('/');
@@ -38,26 +36,20 @@ socket.on('updatechat', function (username, data) {
 socket.on('updateusers', function(data) {
   $('#users').empty();
   $.each(data, function(key, value) {
-    $('#users').append('<div><a href="' + searchUrlFor(key) + '" target="_blank">' +
-                       key + '</div>');
+    $('#users').append('<div>' + value + '</div>');
   });
+  $("#player1").text(0);
   $("#player2").text(0);
 });
 
 socket.on('servernotification', function (data) {
   var searchUrl = searchUrlFor(data.username);
   if(data.connected) {
-    if(data.to_self) data.username = "you";
-
-    $('#conversation').append('connected: <a href="' + searchUrl + '" target="_blank">' +
-                              escaped(data.username) + "</a><br/>");
-    $("#player1").text(0);
+    if(!data.to_self){
+      $("#attend-content").text(data.username + " attended!");
+    }
   } else {
-    $('#conversation').append('disconnected: <a href="' + searchUrl + '" target="_blank">' +
-                              escaped(data.username) + "</a><br/>");
-    $("#attend-content").text(data.username + " attended!");
-    $("#attend").show();
-    $("#player2").text(0);
+    $("#attend-content").text(data.username + " leaved!");
   }
 });
 

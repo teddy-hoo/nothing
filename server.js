@@ -19,7 +19,7 @@ app.get('/', function (req, res) {
 });
 
 userlist = {
-  curUser: 0;
+  curUser: 0,
   users: []
 };
 
@@ -30,8 +30,9 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('adduser', function(username) {
     socket.username = username;
-
-    userlist[username] = username;
+    if(userlist.users.indexOf(username) < 0){
+      userlist.users.push(username);
+    }
 
     socket.emit('servernotification',
                 { connected: true, to_self: true, username: username });
@@ -39,7 +40,7 @@ io.sockets.on('connection', function(socket) {
     socket.broadcast.emit('servernotification',
                           { connected: true, username: username });
 
-    io.sockets.emit('updateusers', userlist);
+    io.sockets.emit('updateusers', userlist.users);
   });
 
   socket.on('disconnect', function(){
