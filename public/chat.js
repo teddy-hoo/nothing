@@ -1,13 +1,10 @@
 function getName() {
-  var name = window.names[Math.floor(Math.random() * window.names.length)];
+  var local = JSON.parse(window.localStorage.getItem("press"));
+  var name = local && local.username ?
+             local.username : prompt("Inter a name for this game:", "");
+  window.localStorage.setItem("press", JSON.stringify({ username: name }));
 
-  var tokens = name.split(',');
-
-  if(tokens.length > 1) {
-    return $.trim(tokens[1]) + " " + $.trim(tokens[0]);
-  }
-
-  return name;
+  return name.trim();
 }
 
 function escaped(s) {
@@ -25,9 +22,7 @@ $("#data").attr('placeholder', 'send message as ' + name);
 
 var socket = io.connect('/');
 
-// on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function() {
-  // call the server-side function 'adduser' and send one parameter (value of prompt)
   socket.emit('adduser', name);
 });
 
